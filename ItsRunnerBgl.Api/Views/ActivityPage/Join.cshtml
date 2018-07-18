@@ -1,0 +1,55 @@
+﻿@model ItsRunnerBgl.ViewModels.ActivityJoinViewModel
+
+@{
+    ViewData["Title"] = "Iscrizione alla gara";
+}
+
+<div id="signalRForm" class="dobox">
+    <h4>Sei sicuro di volerti iscriverti alla gara "@Html.DisplayFor(model => model.Activity.Name)"?</h4>
+    <div>
+        <hr />
+        <form asp-action="Join" method="POST" id="FormSend">
+            <input type="hidden" name="IdActivity" value="@Model.Activity.Id" />
+            <input type="submit" id="submitForm" value="Sì" class="btn btn-default" /> <a class="btn btn-default" asp-action="Index">No</a>
+        </form>
+    </div>
+</div>
+
+@{ await Html.RenderPartialAsync("_SignalRRedirect"); }
+
+@section Scripts {
+    <script src="~/lib/signalr/browser/signalr.js"></script>
+    <script type="text/javascript">
+        var responses = new signalR.HubConnectionBuilder().withUrl("/torunner").build();
+        responses.on("SignalRRedirectResponse",
+            function(args) {
+                debugger;
+                window.location.replace('@Url.Action("Index", "ActivityPage")');
+            });
+        responses.start();
+
+        $("#submitForm").on('click',
+            function(e) {
+                //stop submit the form, we will post it manually.
+                e.preventDefault();
+
+                setFormSend();
+
+                // Get form
+                var form = $('#FormSend')[0];
+                var data = new FormData(form);
+
+                $.ajax({
+                    url: '@Url.Action("Join", "ActivityPage")',
+                    data: data,
+                    cache: false,
+                    contentType: false,
+                    //enctype: 'multipart/form-data',
+                    processData: false,
+                    method: 'POST',
+                    success: setFormWait,
+                    error: setFormReset
+                });
+            });
+    </script>
+}

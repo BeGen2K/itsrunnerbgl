@@ -1,0 +1,17 @@
+﻿@model ItsRunnerBgl.Models.Models.Activity
+
+@{
+    ViewData["Title"] = "Inizia attività";
+}
+
+<div id="signalRForm" class="dobox">
+    <h4>Sei sicuro di voler iniziare l'attività "@Html.DisplayFor(model => model.Name)"?</h4>
+    <div>
+        <hr />
+        <form asp-action="Start" method="POST" id="FormSend">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Name" />
+            <input type="submit" id="submitForm" value="Sì" class="btn btn-default" /> <a class="btn btn-default" asp-action="Index">No</a>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,6 @@
+﻿CREATE TABLE [dbo].[PhotoOld]
+(
+	[Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY, 
+    [IdUser] INT NOT NULL, 
+    [PhotoUrl] NVARCHAR(150) NOT NULL
+)

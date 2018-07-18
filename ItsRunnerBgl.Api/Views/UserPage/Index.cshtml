@@ -1,0 +1,79 @@
+﻿@model IEnumerable<ItsRunnerBgl.Models.Models.User>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="actionBar">
+    Azioni: <a asp-action="EditProfile" asp-route-id="@ViewBag.UserId" class="btn btn-default">Modifica il mio profilo</a>
+</div>
+<table class="table dobox">
+    <thead>
+        <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Id)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.IdentityUser)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Username)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Surname)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Birthday)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Sex)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.PhotoUrl)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.IsOrganizer)
+                </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdentityUser)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Username)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Surname)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Birthday)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Sex)
+            </td>
+            <td>
+                <a href="@Html.DisplayFor(modelItem => item.PhotoUrl)">@Html.DisplayFor(modelItem => item.PhotoUrl)</a>
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsOrganizer)
+            </td>
+            <td>
+                
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

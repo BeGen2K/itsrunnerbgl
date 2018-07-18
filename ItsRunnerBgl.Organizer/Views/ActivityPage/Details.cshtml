@@ -1,0 +1,410 @@
+﻿@using ItsRunnerBgl.Models.Models
+@model ItsRunnerBgl.Models.Models.Activity
+@inject Microsoft.AspNetCore.Hosting.IHostingEnvironment env
+
+<h2>Allenamento @Model.StatusText</h2>
+
+<style type="text/css">
+    dt, dd {
+        border-right: 1px solid #eee;
+        padding-right: 16px;
+    }
+
+    .actionBar {
+        padding-left: 16px;
+    }
+
+    .dobox {
+        clear: right;
+    }
+
+    #timerContainer {
+        padding-top: 16px;
+        padding-bottom: 32px;
+    }
+
+    #timerContainer, #timer {
+        text-align: center;
+    }
+
+    #timer {
+        font-size: 64px;
+        border-radius: 128px;
+        vertical-align: middle;
+    }
+</style>
+
+<div class="actionBar">
+    Azioni:
+    <a asp-action="Index" class="btn btn-default">Torna indietro</a>
+    @if (Model.Status == 0)
+    {
+        <a asp-action="Start" asp-route-id="@Model.Id" class="btn btn-default">Inizia attività</a>
+    }
+    else if (Model.Status == 1)
+    {
+        <a asp-action="Close" asp-route-id="@Model.Id" class="btn btn-default">Termina attività</a>
+    }
+</div>
+
+<div>
+    <hr />
+    <dl class="dl-horizontal dobox">
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Location)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Location)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.CreationDate)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.CreationDate)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.StartDate)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.StartDate)
+        </dd>
+        @if (Model.EndDate != null)
+        {
+            <dt>
+                @Html.DisplayNameFor(model => model.EndDate)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.EndDate)
+            </dd>
+        }
+        <dt>
+            @Html.DisplayNameFor(model => model.RaceUrl)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.RaceUrl)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.TypeText)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.TypeText)
+        </dd>
+    </dl>
+</div>
+
+
+@if (Model.Status > 0)
+{
+
+    <div id="timerContainer">
+        <span class="dobox" id="timer">@Model.CreationDate</span>
+    </div>
+
+    <div id="map" style="width: 100%; height: 600px"></div>
+ 
+}
+
+
+@section Scripts {
+    @{
+        var mapsApiKey = "AIzaSyBTXn-gcYYcipuXLVTrK0hohA-BpVRuQNs";
+    }
+    <script src="~/lib/signalr/browser/signalr.js"></script>
+    <script type="text/javascript">
+
+        // Config
+        var enableImageUpload = true;
+
+        var ignoreTimer = false;
+        var simulateMovement = true;
+
+        // The rest
+
+        var cameraEnabled = false;
+        var idRunner = @ViewBag.IdUser;
+        var idActivity = @ViewBag.IdActivity;
+        var activityStatus = @Model.Status;
+        var isOrganizer = @(ViewBag.IsOrganizer ? "true" : "false");
+
+        var telemetryTimer = 10; // Send telemetry each <n> second
+
+
+        var receiveTelemetryEndpoint = "/api/Telemetry/" + idActivity;
+        //var sendTelemetryEndpoint = "/api/Telemetry/" + idActivity + "/Send";
+
+        var telemetryInterval = null;
+        var imageData = "";
+        //var base_image;
+        var canvas;
+        var defaultImages;
+
+        // API-Specific
+        var markers = [];
+        var dataList = [];
+        var infoWindow;
+        var map;
+        var poly;
+        var telemetryReceived = false;
+
+
+        function initMap() {
+
+            map = new google.maps.Map(document.getElementById('map'),
+                {
+                    zoom: 12,
+                });
+
+            poly = new google.maps.Polyline({
+                strokeColor: '#000000',
+                strokeOpacity: 1.0,
+                strokeWeight: 3
+            });
+            poly.setMap(map);
+            infowindow = new google.maps.InfoWindow();
+
+            receiveTelemetry();
+            telemetryInterval = addTelemetryListener();
+        }
+
+        function addLines(data) {
+
+            // Set initial position
+            if (data.length > 0) {
+                map.setCenter(new google.maps.LatLng(data[0].latitude, data[0].longitude));
+            }
+
+            dataList = data;
+            for (var i = 0; i < data.length; i++) {
+                var position = new google.maps.LatLng(data[i].latitude, data[i].longitude);
+
+                var path = poly.getPath();
+                path.push(position);
+
+                var marker = new google.maps.Marker({
+                    position: position,
+                    map: map,
+                });
+                markers.push(marker);
+
+                marker.addListener('click',
+                    ((marker, i) => {
+                        return () => {
+                            changeInfoWindow(map, marker, i);
+                        }
+                    })(marker, i));
+
+
+            }
+            telemetryReceived = true; // Enable further send telemetry calls
+        }
+
+        function addNextLine(position, imageUrl = "") {
+            // First sets
+            if (!dataList.length) {
+                map.setCenter(position);
+            }
+
+            var path = poly.getPath();
+            path.push(position);
+
+            var marker = new google.maps.Marker({
+                position: position,
+                map: map
+            });
+
+            markers.push(marker);
+            var i = markers.length - 1;
+
+            marker.addListener('click',
+                ((marker, i) => {
+                    return () => {
+                        changeInfoWindow(map, marker, i);
+                    }
+                })(marker, i));
+
+            dataList.push({
+                latitude: position.lat(),
+                longitude: position.lng(),
+                imageUrl: imageUrl,
+            });
+            return {
+                path: path,
+                marker: marker
+            };
+
+        }
+
+        function changeInfoWindow(map, marker, i) {
+            var content = "";
+            if (dataList[i].imageUrl.length > 0) {
+                content += '<img src="' + dataList[i].imageUrl + '" style="width:300px;">';
+            }
+            content += "LAT: " + dataList[i].latitude + "; LNG: " + dataList[i].longitude + "<br/>";
+            if (i != dataList.length - 1)
+                content += "<br>TO NEXT: " + calcLatLngDistance(dataList[i].latitude, dataList[i].longitude, dataList[i + 1].latitude, dataList[i + 1].latitude) + "";
+            if (i != 0)
+                content += "<br>TO LAST: " + calcLatLngDistance(dataList[i].latitude, dataList[i].longitude, dataList[i - 1].latitude, dataList[i - 1].latitude) + "";
+
+            infowindow.close(); // Close previously opened infowindow
+            infowindow.setContent("<div id='infowindow'>" + content + "</div>");
+            infowindow.open(map, marker);
+        }
+
+        function calcDistance(p1, p2) {
+            return (google.maps.geometry.spherical.computeDistanceBetween(p1, p2) / 1000).toFixed(2);
+        }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=@(mapsApiKey)&callback=initMap" async defer></script>
+
+
+
+    <script type="text/javascript">
+
+
+
+
+        //----
+        // First of all, set up the timer
+
+
+        function timer(key) {
+            this.key = key;
+            this.timerData = null;
+            this.timerHours = 0;
+            this.timerMinutes = 0;
+            this.timerDays = 0;
+        }
+
+        timer.prototype.initialize = function() {
+            @{
+                DateTime currentDate = Model.EndDate ?? DateTime.Now;
+                var timeOffset = (Model.StartDate != null ? Math.Floor((currentDate - (DateTime)Model.StartDate).TotalSeconds) : 0);
+            }
+            var timeOffset = @timeOffset;
+
+            // Split the h:i:s
+            this.timerHours = Math.floor(timeOffset / 3600);
+            timeOffset -= this.timerHours * 3600;
+            this.timerMinutes = Math.floor(timeOffset / 60);
+            this.timerSeconds = Math.floor(timeOffset % 60);
+
+            this.timerData = $(this.key);
+        }
+        timer.prototype.start = function () {
+            var that = this;
+            window.setInterval(function () {
+                that.timerSeconds++;
+                if (that.timerSeconds > 59) {
+                    that.timerSeconds = 0;
+                    that.timerMinutes++;
+                    if (that.timerMinutes > 59) {
+                        that.timerMinutes = 0;
+                        that.timerHours++;
+                    }
+                }
+                that.timerData.html("" + (that.timerHours) + ":" + (that.timerMinutes) + ":" + (that.timerSeconds) + "");
+            }, 1000);
+        }
+        timer.prototype.update = function() {
+            this.timerSeconds++;
+            if (this.timerSeconds > 59) {
+                this.timerSeconds = 0;
+                this.timerMinutes++;
+                if (this.timerMinutes > 59) {
+                    this.timerMinutes = 0;
+                    this.timerHours++;
+                }
+            }
+            this.timerData.html("" + (this.timerHours) + ":" + (this.timerMinutes) + ":" + (this.timerSeconds) + "");
+        }
+        //---
+
+        var wTimer = new timer("#timer");
+        if (activityStatus > 0) {
+            wTimer.initialize();
+            if (activityStatus == 1) {
+                wTimer.start();
+            } else {
+                wTimer.update();
+            }
+        }
+
+        function calcLatLngDistance(lat1, lon1, lat2, lon2) {
+            var R = 6371; // km
+            var dLat = (lat2 - lat1) * Math.PI / 180;
+            var dLon = (lon2 - lon1) * Math.PI / 180;
+            var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) *
+                Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) *
+                Math.sin(dLon / 2);
+            var c = 2 * Math.asin(Math.sqrt(a));
+            var d = R * c;
+            return d;
+        }
+
+
+
+
+
+        // Is GeoLocation set or enavbled?
+        function addTelemetryListener() {
+            if (activityStatus != 1) {
+                return;
+            }
+            setTelemetryStreamer();
+            return int;
+        }
+
+        function getGeolocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(sendTelemetry,
+                    function(e) {
+                        // Failed.
+                        if (simulateMovement) {
+                            var position = {};
+                            position.coords = {};
+                            position.coords.latitude = 52.500 + Math.random();
+                            position.coords.longitude = 13.370 + Math.random();
+
+                            sendTelemetry(position);
+                        }
+                    });
+            }
+        }
+
+
+        function setTelemetryStreamer() {
+            var responses = new signalR.HubConnectionBuilder().withUrl("/toorganizer").build();
+            responses.on("OrganizerStream",
+                (position) => {
+                    //for (var position in args) {
+                    var objPos = new google.maps.LatLng(position.latitude, position.longitude);
+                    if (position.imageUrl) position.imageUrl = "data:image/png;base64," + position.imageUrl;
+                    var markData = addNextLine(objPos, position.imageUrl);
+                    //}
+                });
+            responses.start();
+        }
+
+        // Receive all the previous telemetry points
+        // And add them to the map (lines)
+        function receiveTelemetry() {
+            $.ajax({
+                type: "GET",
+                url: receiveTelemetryEndpoint,
+                dataType: "json",
+                success: function(res) {
+                    addLines(res);
+                },
+            });
+        }
+    </script>
+
+}

@@ -1,0 +1,139 @@
+body {
+    font-family: Verdana, Geneva, sans-serif;
+    background: #fafafa;
+}
+
+p {
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 1.1em;
+    font-weight: 300;
+    line-height: 1.7em;
+    color: #222;
+}
+
+#content-global {
+	border-left: 1px solid #aaa;
+	min-height: 100vh;
+	transition: all 0.3s;
+	width: 100%;
+}
+
+#content {
+	padding: 20px;
+}
+
+.dobox {
+	background: #fff;
+}
+
+.dobox { padding: 24px; }
+/* remove extraneous h3 spacing */
+.dobox-title {
+	margin: 0px; 
+	padding-bottom: 10px;
+}
+
+/* shadow effect */
+.dobox, button, .btn{
+	border: 1px solid #e0dede;
+	box-shadow: 1px 1px #aaa;
+}
+
+.table > thead:first-child {
+    background: linear-gradient(135deg, rgba(225,225,225,1) 0%,rgba(242,242,242,1) 66%,rgba(250,250,250,1) 100%);
+}
+
+#content form {
+	padding: 12px;
+}
+
+a, a:hover, a:focus {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+/* cyan-ish hover color */
+a:hover, a:focus {
+    color: #1c8adb;
+}
+/* disable grayed out effect on dropdown */
+.nav > li > a:focus, .nav > li > a:hover{
+	background: #fff !important;
+}
+
+.navbar {
+    background: #fff;
+    border-bottom: 1px solid #e0dede;
+    border-radius: 0;
+}
+
+.navbar-btn {
+    box-shadow: none;
+    outline: none !important;
+    border: none;
+}
+
+/* spacing fixes */
+.navbar-right, .navbar-nav { margin: 0px; }
+
+
+.line {
+    width: 100%;
+    height: 1px;
+    border-bottom: 1px dashed #ddd;
+    margin: 40px 0;
+}
+
+/* use distinctive top border blue color on dropdown */
+li.dropdown{
+	border-top: 3px solid #fff;
+}
+
+li.dropdown:hover, li.dropdown.open {
+    border-top: 3px solid #337ab7 !important;
+    transition: all 0.3s;
+}
+
+/* but not on when the screen is too small */
+@media (min-width: 769px) {
+    .dropdown-menu {
+        border-top: 3px solid #337ab7 !important;
+    }
+}
+.dropdown-menu{
+	transition: all 1s !important;
+	background-color: #f2efef !important;
+}
+
+.navbar-default .navbar-nav > .open > a{
+	color: #1c8adb !important;
+}
+.nav .open > a{
+	background: #fff !important;
+}
+
+/* location Text in the navbar */
+#locText {
+	color: #000 !important;
+	font-size: 150%;
+	padding: 10px;
+	vertical-align:middle;
+}
+
+/* prevent the arrow going in a separate line */
+.dropdown-toggle {
+	white-space: nowrap;
+}
+
+.fonts { font-size: 75%; }
+
+/* fix unreadable color */
+.nav-pills > li.active > a:hover{
+    color: #008 !important;
+}
+
+.actionBar {
+    float: right;
+    padding-bottom: 16px;
+}

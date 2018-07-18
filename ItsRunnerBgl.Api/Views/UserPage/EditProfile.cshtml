@@ -1,0 +1,64 @@
+﻿@model ItsRunnerBgl.ViewModels.UserPhotoUpdateFormViewModel
+@{
+    ViewData["Title"] = "Upload immagine";
+}
+
+<h2>Upload immagine di profilo.</h2>
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="EditProfile" id="FormSend" method="POST" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <!--<div asp-validation-summary="ModelOnly" class="text-danger"></div>-->
+            <input type="hidden" asp-for="@Model.IdUser" />
+            <div class="form-group">
+                <label class="control-label">Foto del profilo:</label>
+                <input type="file" id="Image" name="Image" />
+                <span class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" id="saveImage" value="Salva immagine" class="btn btn-default" />
+            </div>
+        </form>
+    </div>
+</div>
+<!--
+<div>
+    <a asp-action="Index">Back to List</a> - <a id="restart">Reload SignalR</a>
+</div>
+-->
+@section Scripts {
+    <script src="~/lib/signalr/browser/signalr.js"></script>
+    <script type="text/javascript">
+        var responses = new signalR.HubConnectionBuilder().withUrl("/torunner").build();
+        responses.on("SignalRRedirectResponse",
+            function (args) {
+                debugger;
+                window.location.replace('@Url.Action("Index", "UserPage")');
+            });
+        responses.start();
+
+        $("#saveImage").on('click',
+            function (e) {
+                //stop submit the form, we will post it manually.
+                e.preventDefault();
+
+                // Get form
+                var form = $('#FormSend')[0];
+                var data = new FormData(form);
+
+                $.ajax({
+                    url: '@Url.Action("EditProfile", "UserPage")',
+                    data: data,
+                    cache: false,
+                    contentType: false,
+                    enctype: 'multipart/form-data',
+                    processData: false,
+                    method: 'POST',
+                    success: function(data){
+                        //alert("Messaggio inviato. Attendere prego.");
+                    }
+                });
+            });
+    </script>
+}

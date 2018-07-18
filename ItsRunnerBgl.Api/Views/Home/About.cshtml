@@ -1,0 +1,115 @@
+﻿@{
+    ViewData["Title"] = "About";
+    ViewBag.IdRunner = 1;
+    ViewBag.IdActivity = 1;
+}
+<h2>@ViewData["Title"]</h2>
+<h3>@ViewData["Message"]</h3>
+
+<p>Use this area to provide additional informationX.</p>
+
+<p>TEST</p>
+
+<div id="map" style="width: 800px; height: 600px"></div>
+
+
+@section Scripts {
+    @{
+        var mapsApiKey = "AIzaSyBTXn-gcYYcipuXLVTrK0hohA-BpVRuQNs";
+    }
+    <script type="text/javascript">
+        var markers = [];
+        var map;
+        var poly;
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'),
+                {
+                    zoom: 12,
+                    center: { lat: 52.520, lng: 13.410 }
+                });
+
+            poly = new google.maps.Polyline({
+                strokeColor: '#000000',
+                strokeOpacity: 1.0,
+                strokeWeight: 3
+            });
+            poly.setMap(map);
+
+            // Temp code:
+            // Randomize next marker position
+            window.setInterval(() => {
+                var position = new google.maps.LatLng(52.500 + Math.random(), 13.370 + Math.random());
+               
+                
+                // Do not delete the first marker
+                if (markers.length > 1) {
+                    markers[markers.length - 1].setMap(null);
+                }
+
+                var path = poly.getPath();
+                path.push(position);
+
+                markers.push(new google.maps.Marker({
+                    position: position,
+                    map: map,
+                    //animation: google.maps.Animation.DROP
+                }));
+
+            },1000);
+
+        }
+
+
+        function calcDistance(p1, p2) {
+            return (google.maps.geometry.spherical.computeDistanceBetween(p1, p2) / 1000).toFixed(2);
+        }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=@(mapsApiKey)&callback=initMap" async defer></script>
+
+
+
+    <script type="text/javascript">
+
+        var telemetryEndpoint = "http://localhost/"; // API endpoint
+        var telemetryTimer = 10; // Send telemetry each <n> second
+
+        var idRunner = @ViewBag.IdRunner; // TODO: To model.IdRunner
+        var idActivity = @ViewBag.IdActivity; // TODO: To model.IdRunner
+
+
+        // Is GeoLocation set or enavbled?
+        if (navigator.geolocation) {
+            window.setTimeout(getGeolocation, telemetryTimer * 1000);
+        } else {
+            alert("GeoLocation seems to be disabled.");
+        }
+
+        function getGeolocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(sendTelemetry);
+            } /*else {
+                x.innerHTML = "Geolocation is not supported by this browser.";
+            }*/
+        }
+
+        function sendTelemetry(position) {
+            $.ajax({
+                type: "POST",
+                url: telemetryEndpoint,
+                data: {
+                    idRunner: idRunner,
+                    idActivity: idActivity,
+                    longitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    instant: date.Now(),
+                },
+                success: success,
+                dataType: dataType
+            })
+            /*
+            x.innerHTML = "Latitude: " + position.coords.latitude +
+                "<br>Longitude: " + position.coords.longitude;*/
+        }
+    </script>
+}

@@ -1,0 +1,24 @@
+﻿<div id="signalRSending" class="dobox" style="margin: auto; width: 600px; display: none">Salvataggio delle modifiche in corso...<br />Non chiudere questa pagina.</div>
+<div id="signalRWaitForRedir" class="dobox" style="margin: auto; width: 600px; display: none">Richiesta effettuata.<br />Attesa della conferma per modifica effettuata.</div>
+
+<script type="text/javascript">
+    var sendWnd = document.getElementById("signalRSending");
+    var waitWnd = document.getElementById("signalRWaitForRedir");
+    var formWnd = document.getElementById("signalRForm");
+    function setFormSend() {
+
+        formWnd.style.display = 'none';
+        sendWnd.style.display = '';
+    }
+
+    function setFormWait() {
+        sendWnd.style.display = 'none';
+        waitWnd.style.display = '';
+    }
+
+    function setFormReset() {
+        sendWnd.style.display = 'none';
+        waitWnd.style.display = 'none';
+        formWnd.style.display = '';
+    }
+</script>

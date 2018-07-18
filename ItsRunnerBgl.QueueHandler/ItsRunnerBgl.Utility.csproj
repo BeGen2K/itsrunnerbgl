@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <AssemblyName>ItsRunnerBgl.Utility</AssemblyName>
+    <RootNamespace>ItsRunnerBgl.Utility</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.1" />
+    <PackageReference Include="Microsoft.Azure.EventHubs" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Azure.EventHubs.Processor" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.0.2" />
+    <PackageReference Include="Microsoft.Azure.ServiceBus.EventProcessorHost" Version="2.2.7" />
+    <PackageReference Include="WindowsAzure.Storage" Version="9.2.0" />
+  </ItemGroup>
+
+</Project>

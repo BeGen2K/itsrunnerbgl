@@ -1,0 +1,99 @@
+﻿@using ItsRunnerBgl.Models.Models
+@using Microsoft.AspNetCore.Html
+@model IEnumerable<Activity>
+
+@{
+    ViewData["Title"] = "Allenamenti";
+}
+
+<div class="actionBar">
+    Azioni: <a asp-action="Create" class="btn btn-default">Crea allenamento</a> <a asp-action="JoinByUrl" class="btn btn-default">Iscriviti a una gara</a>
+</div>
+<table class="table dobox">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CreationDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StartDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EndDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Location)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.RaceUrl)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Type)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreationDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StartDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EndDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Location)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RaceUrl)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TypeText)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StatusText)
+            </td>
+            <td style="white-space: nowrap; text-align: right">
+                @switch (item.Status)
+                {
+                    case 1: // In corso
+                        if (item.IdUser == ViewBag.IdUser)
+                        {
+                            <span><a asp-action="Close" class="btn btn-default" asp-route-id="@item.Id">Chiudi</a></span>
+                        }
+
+                        break;
+                    case 0: // Aperto
+                        if (item.IdUser == ViewBag.IdUser)
+                        {
+                            <a asp-action="Start" class="btn btn-default" asp-route-id="@item.Id">Inizia</a>
+                        }
+                        else if (item.Type == 2 && ViewBag.IsOrganizer == false && !item.IsAdded)
+                        {
+                            <!-- <a asp-action="Join" class="btn btn-default" asp-route-id="@item.Id">Partecipa</a>-->
+                        }
+                        break;
+                }
+
+
+                <a asp-action="Details" class="btn btn-default" asp-route-id="@item.Id">Visualizza</a>
+            </td>
+
+        </tr>
+        }
+    </tbody>
+</table>
